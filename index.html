@@ -1,0 +1,135 @@
+<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Member Recognition</title>
+    
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+    
+    <script src="https://unpkg.com/ml5@0.4.3/dist/ml5.min.js"></script>
+   
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+       
+        <h1 class="text-center">Family Member Recognition</h1>
+        
+        
+        <ul class="list-group mb-4">
+            <li class="list-group-item">Father</li>
+            <li class="list-group-item">Mother</li>
+            <li class="list-group-item">GrandFather</li>
+            <li class="list-group-item">GrandMother</li>
+            <li class="list-group-item">Uncle</li>
+            <li class="list-group-item">Aunt</li>
+            <li class="list-group-item">Sister</li>
+            <li class="list-group-item">me</li>
+       
+        </ul>
+
+        
+        <div id="webcam-container" class="mb-4"></div>
+        
+        
+        <div id="captured-image" class="mb-4"></div>
+
+       
+        <button onclick="captureImage()" class="btn btn-primary mb-2">  capture Image</button>
+        
+        
+        <button onclick="identifyImage()" class="btn btn-success mb-2">identify Image</button>
+
+        <div id="results" class="mt-4">
+            <span id="family-member-name" class="d-block"></span>
+            <span id="accuracy" class="d-block"></span>
+        </div>
+    </div>
+
+ 
+    <script src="main.js"></script>
+
+    <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition</title>
+    <script src="face_recognition.js" defer></script>
+</head>
+<body>
+    <div id="camera_section">
+        <video id="video" width="640" height="480" autoplay></video>
+        <button id="capture_button">Capture</button>
+        <button id="identify_button">Identify</button>
+        <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+    </div>
+    <div id="result_section">
+        <p id="result_label"></p>
+        <p id="result_confidence"></p>
+    </div>
+
+    
+</body>
+</html>
+
+let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let resultLabel = document.getElementById("result_label");
+let resultConfidence = document.getElementById("result_confidence");
+let model; 
+
+
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream;
+    })
+    .catch(err => {
+        console.error("Error accessing webcam: ", err);
+    });
+
+
+function captureImage() {
+    let context = canvas.getContext("2d");
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+}
+
+
+function check() {
+    captureImage();
+    let image = canvas.toDataURL("image/png");
+    model.classify({ image }, gotResult);
+}
+
+
+function gotResult(error, results) {
+    if (error) {
+        console.error("Error in gotResult: ", error);
+        return;
+    }
+    if (results && results.length > 0) {
+        resultLabel.innerText = "Label: " + results[0].label;
+        resultConfidence.innerText = "Confidence: " + results[0].confidence.toFixed(2);
+    } else {
+        resultLabel.innerText = "No results";
+        resultConfidence.innerText = "";
+    }
+}
+
+// Event listeners for capture and identify buttons
+document.getElementById("capture_button").addEventListener("click", captureImage);
+document.getElementById("identify_button").addEventListener("click", check);
+
+
+async function loadModel() {
+    // Example with TensorFlow.js, adjust based on your actual model
+    model = await tf.loadLayersModel('path/to/your/model.json');
+}
+
+loadModel();
+
+</body>
+</html>
+
